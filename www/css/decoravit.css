@@ -1,0 +1,182 @@
+* {
+	margin: 0;
+	padding: 0;
+	outline: 0;
+	border: none;
+	cursor: default;
+	-webkit-user-select: none;
+}
+
+html,
+body {
+	height: 100%;
+}
+
+body {
+	font-family: "SF UI Display Regular", "Helvetica", sans-serif;
+}
+
+#toolbar {
+	position: absolute;
+	z-index: 2;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 36px;
+	background: #111;
+	padding-left: 70px;
+	display: flex;
+	align-items: center;
+
+	background: transparent;
+	border-bottom: 1px solid rgba(255,255,255,.05);
+
+	-webkit-app-region: drag;
+}
+#toolbar:after {
+	content: "";
+	position: absolute;
+	z-index: -1;
+	left: 0;
+	bottom: 0;
+	height: 1px;
+	background: rgba(255,255,255,0.5);
+
+	width: 0%;
+	opacity: 1;
+}
+#toolbar.loading:after {
+	transition: width 0.5s, left 0.5s 0.3s, opacity 0.3s 0.3s;
+	opacity: 0;
+	width: 75%;
+	left: 25%;
+}
+	#toolbar .push {
+		flex-grow: 1;
+	}
+	#toolbar .button {
+		position: relative;
+		height: 100%;
+		box-sizing: border-box;
+		border: 1px solid white;
+		padding: 0 16px;
+
+		display: flex;
+		align-items: center;
+	}
+		#toolbar .button span {
+			font-size: 14px;
+			color: white;
+		}
+	#toolbar .button#beautify {
+		height: 30px;
+		margin-right: 3px;
+		background: linear-gradient(to top, #006bff 0%, #00aeff 100%);
+		border-color: #002f65;
+		border-radius: 5px;
+	}
+	#toolbar .button#beautify:before {
+		content: "";
+		position: absolute;
+		left: 0;
+		right: 0;
+		top: 0;
+		bottom: 0;
+
+		transition: all 0.15s;
+	}
+	#toolbar .button#beautify:hover:before {
+		background: rgba(255,255,255,.1);
+	}
+	#toolbar .button#beautify:active:before {
+		background: rgba(0,0,0,.1);
+	}
+	#toolbar #modes {
+		align-self: flex-start;
+		height: 36px;
+		overflow: hidden;
+		border-radius: 0 0 5px 5px;
+
+		display: flex;
+		flex-direction: column;
+
+		transition: all 0.2s;
+	}
+	#toolbar #modes:hover {
+		height: 108px;
+		background: rgba(0,0,0,.75);
+	}
+		#toolbar #modes .option {
+			display: flex;
+			flex-shrink: 0;
+			flex-direction: row;
+			align-items: center;
+			order: 2;
+
+			white-space: nowrap;
+			color: white;
+			font-size: 14px;
+
+			height: 36px;
+			padding: 0 10px;
+
+			transition: all 0.2s;
+		}
+		#toolbar #modes .option:hover {
+			background: rgba(255,255,255,0.05);
+		}
+		#toolbar #modes .option:active {
+			background: rgba(255,255,255,0.025);
+		}
+		#toolbar #modes .option.active {
+			order: 1;
+		}
+			#toolbar #modes .option .icon {
+				content: "";
+				width: 20px;
+				height: 20px;
+				margin-right: 10px;
+				background-position: center center;
+				background-repeat: no-repeat;
+				background-size: contain;
+			}
+
+#cm {
+	position: absolute;
+	z-index: 1;
+	top: 36px;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	cursor: text;
+}
+
+.CodeMirror {
+	height: 100%;
+	background: transparent !important;
+}
+
+.CodeMirror-vscrollbar::-webkit-scrollbar-track {
+	background-color: transparent;
+}
+
+.CodeMirror-vscrollbar::-webkit-scrollbar {
+	width: 10px;
+	background-color: transparent;
+}
+
+.CodeMirror-vscrollbar::-webkit-scrollbar-thumb {
+	border-radius: 10px;
+	background-color: #111;
+}
+.CodeMirror-linenumber {
+	opacity: 0.3;
+	background: transparent !important;
+}
+
+.CodeMirror-gutters {
+	background: transparent !important;
+}
+.CodeMirror-selectedtext {
+	background: red !important;
+}

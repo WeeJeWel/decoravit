@@ -1,0 +1,98 @@
+<!doctype html>
+<html>
+	<head>
+		<title>Decoravit - Beautiful code beautifier</title>
+		<style type="text/css">
+		* {
+			margin: 0;
+			padding: 0;
+		}
+
+		html,
+		body {
+			height: 100%;
+		}
+
+		body {
+			background: linear-gradient(to bottom right, #130e48 0%, #502957 100%) fixed;
+			font-family: "Helvetica", sans-serif;
+			text-align: center;
+			color: white;
+			text-shadow: 0 2px 2px rgba(0,0,0,.5);
+
+			display: flex;
+			flex-direction: column;
+		}
+
+		.content {
+			flex-grow: 1;
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+		}
+
+		h1 {
+			font-size: 80px;
+			font-weight: 600;
+		}
+		h2 {
+			font-size: 28px;
+			font-weight: 400;
+			margin-bottom: 50px;
+		}
+		a.button {
+			border: 1px solid white;
+			border-radius: 30px;
+			padding: 15px 30px;
+			color: inherit;
+			font-size: 16px;
+			text-decoration: none;
+			text-shadow: none;
+			background: rgba(255,255,255,0.05);
+
+			transition: all 0.15s;
+		}
+		a.button:hover {
+			background: rgba(255,255,255,0.1);
+		}
+		a.button:active {
+			background: rgba(0,0,0,0.5);
+		}
+			a.button i {
+				margin-right: 10px;
+				font-size: 20px;
+			}
+			a.button > * {
+				display: inline-block;
+				vertical-align: middle;
+			}
+		.screenshot {
+			flex-shrink: 0;
+			flex-grow: 0;
+			height: 500px;
+			background: url(screenshot.png) no-repeat top center;
+		}
+		</style>
+		<link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+	</head>
+	<body>
+
+		<div class="content">
+
+			<h1>decoravit</h1>
+			<h2>beautiful code beautifier</h2>
+
+			<p>
+				<a class="button" href="https://github.com/WeeJeWel/decoravit/releases/download/1.0.0/Decoravit-darwin-x64.zip">
+					<i class="fa fa-apple"></i>
+					<span>Download</span>
+				</a>
+			</p>
+
+		</div>
+
+		<div class="screenshot"></div>
+
+	</body>
+</html>

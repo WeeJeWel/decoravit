@@ -4,9 +4,15 @@ const electron = require('electron');
 const settings = require('electron-settings');
 
 const app = electron.app;
+const bridge = electron.ipcMain;
 const BrowserWindow = electron.BrowserWindow;
 const Menu = electron.Menu;
 const MenuItem = electron.MenuItem;
+
+const defaultOpts = {
+	indent: 'tab',
+	mode: 'javascript'
+}
 
 let menu;
 let mainWindow;
@@ -30,9 +36,21 @@ function createWindow() {
 	mainWindow.on('closed', function() {
 		mainWindow = null
 	})
-	mainWindow.once('ready-to-show', () => {
-		mainWindow.show()
-	})
+
+	bridge
+		.on('opt', (e, { id, value }) => {
+			setOpt( id, value );
+		})
+		.on('opts', () => {
+			mainWindow.show();
+		})
+		.on('ready', () => {
+			let opts = {};
+			for( let opt in defaultOpts ) {
+				opts[opt] = getOpt(opt);
+			}
+			mainWindow.webContents.send('opts', opts);
+		})
 
 	menu = Menu.buildFromTemplate([
 		{
@@ -71,6 +89,13 @@ function createWindow() {
 		{
 	        label: 'Edit',
 	        submenu: [
+		        new MenuItem({
+					label: 'Beautify',
+					accelerator: 'Alt+Return',
+					click: () => {
+						mainWindow.webContents.send('action', { event: 'beautify' });
+					}
+				}),
 	            {
 	                type: 'separator'
 	            },
@@ -103,67 +128,6 @@ function createWindow() {
 	            }
 	        ]
 	    },
-		{
-	        label: 'Beautify',
-	        submenu: [
-		        new MenuItem({
-					label: 'Beautify',
-					accelerator: 'CmdOrCtrl+B',
-					click: () => {
-						mainWindow.webContents.send('action', 'beautify');
-					}
-				}),
-				{
-					type: 'separator',
-				},
-		        new MenuItem({
-					label: 'Indentation',
-					type: 'submenu',
-					submenu: [
-						{
-							label: 'Tab',
-							type: 'radio',
-							checked: settings.get('option.indent') === 'tab',
-							click: () => {
-								settings.set('option.indent', 'tab');
-							}
-						},
-						{
-							label: '2 Spaces',
-							type: 'radio',
-							checked: settings.get('option.indent') === 'space2',
-							click: () => {
-								settings.set('option.indent', 'space2');
-							},
-						},
-						{
-							label: '3 Spaces',
-							type: 'radio',
-							checked: settings.get('option.indent') === 'space3',
-							click: () => {
-								settings.set('option.indent', 'space3');
-							},
-						},
-						{
-							label: '4 Spaces',
-							type: 'radio',
-							checked: settings.get('option.indent') === 'space4',
-							click: () => {
-								settings.set('option.indent', 'space4');
-							},
-						},
-						{
-							label: '8 Spaces',
-							type: 'radio',
-							checked: settings.get('option.indent') === 'space5',
-							click: () => {
-								settings.set('option.indent', 'space5');
-							},
-						}
-					]
-				}),
-			]
-		},
 	    {
 	        label: 'View',
 	        submenu: [
@@ -219,6 +183,16 @@ function createWindow() {
 	    }
 	]);
 	Menu.setApplicationMenu(menu);
+
+	function getOpt( key ) {
+		let value = settings.get(key);
+		if( typeof value === 'undefined' ) return defaultOpts[ key ];
+		return value;
+	}
+
+	function setOpt( key, value ) {
+		settings.set(key, value);
+	}
 }
 
 app.on('ready', createWindow);

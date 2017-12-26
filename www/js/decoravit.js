@@ -1,3 +1,6 @@
+const electron = require('electron');
+const bridge = electron.ipcRenderer;
+
 window.addEventListener('load', () => {
 	const modes = [
 		{
@@ -20,6 +23,29 @@ window.addEventListener('load', () => {
 		}
 	]
 
+	const indents = [
+		{
+			id: 'tab',
+			title: 'Tab',
+			spans: 1,
+		},
+		{
+			id: 'space2',
+			title: '2 Spaces',
+			spans: 2,
+		},
+		{
+			id: 'space4',
+			title: '4 Spaces',
+			spans: 4,
+		},
+	]
+
+	const opts = {
+		indent: null,
+		mode: null,
+	}
+
 	const toolbarEl = document.getElementById('toolbar');
 	const cmEl = document.getElementById('cm');
 	const cm = CodeMirror(cmEl, {
@@ -33,8 +59,6 @@ window.addEventListener('load', () => {
 	});
 	cm.execCommand("selectAll")
 
-	let activeMode = modes[0];
-
 	cm.on('change', ( cm, changeObj ) => {
 		if( changeObj.origin === 'setValue' ) return;
 		// TODO
@@ -42,18 +66,18 @@ window.addEventListener('load', () => {
 
 	document.getElementById('beautify').addEventListener('click', beautify);
 
-	let modeOptionEls = [];
+	let loadingTimeout;
+
+	let modeOptionEls = {};
 	modes.forEach(mode => {
 		let modeEl = document.createElement('div');
 			modeEl.classList.add('option');
-			modeEl.dataset.mode = mode.id;
 			modeEl.addEventListener('click', () => {
-				modeOptionEls.forEach(modeOptionEl => {
-					modeOptionEl.classList.remove('active');
+				setMode(mode.id);
+				bridge.send('opt', {
+					id: 'mode',
+					value: mode.id,
 				})
-				cm.setOption('mode', mode.cmid);
-				modeEl.classList.add('active');
-				activeMode = mode;
 			});
 
 		let modeIconEl = document.createElement('span');
@@ -66,23 +90,112 @@ window.addEventListener('load', () => {
 		modeEl.appendChild(modeSpanEl);
 
 		document.getElementById('modes').appendChild(modeEl);
-		modeOptionEls.push(modeEl);
+		modeOptionEls[mode.id] = modeEl;
 	})
 
-	require('electron').ipcRenderer.on('action', (e, data) => {
-		if( data === 'beautify' ) return beautify();
-	});
+	function setMode( value ) {
+		for( let modeId in modeOptionEls ) {
+			let modeOptionEl = modeOptionEls[modeId];
+			modeOptionEl.classList.toggle('active', value === modeId);
+		}
+
+		modes.forEach(mode => {
+			if( mode.id === value ) {
+				opts.mode = mode;
+				cm.setOption('mode', mode.cmid);
+			}
+		})
+	}
+
+	let indentOptionEls = {};
+	indents.forEach(indent => {
+		let indentEl = document.createElement('div');
+			indentEl.classList.add('option');
+			indentEl.title = indent.title;
+			indentEl.addEventListener('click', () => {
+				setIndent( indent.id );
+				bridge.send('opt', {
+					id: 'indent',
+					value: indent.id,
+				})
+			});
+
+		for( let i = 0; i < indent.spans; i++ ) {
+			let indentSpanEl = document.createElement('span');
+			indentEl.appendChild(indentSpanEl);
+		}
+
+		document.getElementById('indent').appendChild(indentEl);
+		indentOptionEls[ indent.id ] = indentEl;
+	})
+
+	function setIndent( value ) {
+		for( let indentId in indentOptionEls ) {
+			let indentOptionEl = indentOptionEls[indentId];
+			indentOptionEl.classList.toggle('active', value === indentId);
+		}
+
+		indents.forEach(indent => {
+			if( indent.id === value ) return opts.indent = indent;
+		})
+	}
+
+	bridge
+		.on('action', (e, data) => {
+			if( data.event === 'beautify' ) return beautify();
+		})
+		.on('opts', ( e, opts ) => {
+			for( let opt in opts ) {
+				onOpt( opt, opts[opt] );
+			}
+			setTimeout(() => {
+				bridge.send('opts');
+			}, 100);
+		})
+		.on('opt', (e, { id, value }) => {
+			onOpt( id, value );
+		})
+		.send('ready')
+
+	function onOpt( id, value ) {
+		if( id === 'mode' ) return setMode(value);
+		if( id === 'indent' ) return setIndent(value);
+	}
 
 	function beautify() {
-		if( toolbarEl.classList.contains('loading') ) return;
-			toolbarEl.classList.add('loading');
+		let loadingEl = document.createElement('div');
+			loadingEl.classList.add('loading');
+		toolbarEl.appendChild(loadingEl);
+
+		setTimeout(() => {
+			loadingEl.classList.add('running');
+		}, 1);
+
+		setTimeout(() => {
+			toolbarEl.removeChild(loadingEl);
+		}, 1000);
+
+		let beautifyOpts = {
+			indent_inner_html: true,
+			wrap_line_length: 0,
+		};
+		switch( opts.indent.id ) {
+			case 'tab':
+				beautifyOpts.indent_with_tabs = true;
+				break;
+			case 'space2':
+				beautifyOpts.indent_with_tabs = false;
+				beautifyOpts.indent_size = 2;
+				break;
+			case 'space4':
+				beautifyOpts.indent_with_tabs = false;
+				beautifyOpts.indent_size = 4;
+				break;
+		}
 
 		let code = cm.getValue();
-		let result = activeMode.beautifyFn(code, {});
+		let result = opts.mode.beautifyFn(code, beautifyOpts);
 		cm.setValue( result );
-		setTimeout(() => {
-			toolbarEl.classList.remove('loading');
-		}, 1000)
 	}
 
 });

@@ -1,3 +1,5 @@
+'use strict';
+
 const path = require('path');
 const url = require('url');
 const electron = require('electron');
@@ -43,6 +45,9 @@ function createWindow() {
 		})
 		.on('opts', () => {
 			mainWindow.show();
+		})
+		.on('dialog', (e, opts) => {
+			electron.dialog.showMessageBox(mainWindow, opts);
 		})
 		.on('ready', () => {
 			let opts = {};

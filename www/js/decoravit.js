@@ -1,3 +1,5 @@
+'use strict';
+
 const electron = require('electron');
 const bridge = electron.ipcRenderer;
 
@@ -6,7 +8,13 @@ window.addEventListener('load', () => {
 		{
 			id: 'js',
 			cmid: 'javascript',
-			title: 'JavaScript / JSON',
+			title: 'JavaScript',
+			beautifyFn: js_beautify,
+		},
+		{
+			id: 'json',
+			cmid: 'application/json',
+			title: 'JSON',
 			beautifyFn: js_beautify,
 		},
 		{
@@ -47,6 +55,7 @@ window.addEventListener('load', () => {
 	}
 
 	const toolbarEl = document.getElementById('toolbar');
+	const modesEl = document.getElementById('modes');
 	const cmEl = document.getElementById('cm');
 	const cm = CodeMirror(cmEl, {
 		theme: 'monokai',
@@ -56,12 +65,14 @@ window.addEventListener('load', () => {
 		autofocus: true,
 		styleSelectedText: true,
 		value: '// paste your code here',
+
+	    gutters: ["CodeMirror-lint-markers"],
+	    lint: true
 	});
 	cm.execCommand("selectAll")
 
 	cm.on('change', ( cm, changeObj ) => {
 		if( changeObj.origin === 'setValue' ) return;
-		// TODO
 	})
 
 	document.getElementById('beautify').addEventListener('click', beautify);
@@ -78,6 +89,7 @@ window.addEventListener('load', () => {
 					id: 'mode',
 					value: mode.id,
 				})
+				modesEl.classList.remove('hover');
 			});
 
 		let modeIconEl = document.createElement('span');
@@ -89,9 +101,17 @@ window.addEventListener('load', () => {
 			modeSpanEl.textContent = mode.title;
 		modeEl.appendChild(modeSpanEl);
 
-		document.getElementById('modes').appendChild(modeEl);
+		modesEl.appendChild(modeEl);
 		modeOptionEls[mode.id] = modeEl;
 	})
+
+	modesEl.addEventListener('mouseover', () => {
+		modesEl.classList.add('hover');
+	});
+
+	modesEl.addEventListener('mouseout', () => {
+		modesEl.classList.remove('hover');
+	});
 
 	function setMode( value ) {
 		for( let modeId in modeOptionEls ) {
@@ -118,6 +138,7 @@ window.addEventListener('load', () => {
 					id: 'indent',
 					value: indent.id,
 				})
+				beautify();
 			});
 
 		for( let i = 0; i < indent.spans; i++ ) {
@@ -194,6 +215,7 @@ window.addEventListener('load', () => {
 		}
 
 		let code = cm.getValue();
+
 		let result = opts.mode.beautifyFn(code, beautifyOpts);
 		cm.setValue( result );
 	}

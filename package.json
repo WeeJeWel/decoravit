@@ -1,10 +1,12 @@
 {
     "name": "decoravit",
+    "productName": "Decoravit",
     "version": "1.0.0",
     "description": "A beautiful JS beautifier",
     "main": "main.js",
     "scripts": {
-        "start": "electron ."
+        "start": "electron .",
+        "build": "electron-packager . --platform=darwin --arch=x64 --out=dist --icon=assets/icon.icns --overwrite"
     },
     "author": "Emile Nijssen",
     "devDependencies": {
